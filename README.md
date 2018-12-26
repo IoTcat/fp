@@ -1,5 +1,5 @@
 # fp
-wow o_0, fp is so smart that I don't even need a cookie anymore~
+wow~ ⊙o⊙ Such a smart fingerprint generator that I don't even need a cookie anymore~
 
 
 ## What is fp?
@@ -19,3 +19,6 @@ A simple example:
 <script type="text/javascript" src="https://cdn.yimian.ac.cn/fp/fp.js"></script>
 <script type="text/javascript">alert(fp);</script>
 ```
+
+
+## Len
