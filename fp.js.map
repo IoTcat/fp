@@ -1,0 +1,34 @@
+var arr =window.location.href.split("://");
+arr=arr[1].split("/");
+arr=arr[0].split(".");
+arr[0]=arr[arr.length-2]+'.'+arr[arr.length-1];
+
+fp=_fp(arr[0]);
+
+
+function _fp(txt)
+{
+	var canvas = document.createElement('canvas');
+	var ctx = canvas.getContext('2d');
+	if(!txt) txt = 'https://security.yimian.xyz/';
+	ctx.textBaseline = "top";
+	ctx.font = "15px 'Arial'";
+	ctx.textBaseline = "yimian";
+	ctx.fillStyle = "#f66";
+	ctx.fillRect(125, 1, 52, 20);
+	ctx.fillStyle = "#039";
+	ctx.fillText(txt, 2, 15);
+	ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+	ctx.fillText(txt, 4, 17);
+	var b64 = canvas.toDataURL();
+	b64 = b64.replace("data:image/png;base64,", "");
+	var bin = atob(b64).slice(-16, -12);
+	var i, l, o = '',n;
+	bin += '';
+	for (i = 0, l = bin.length; i < l; i++) {
+		n = bin.charCodeAt(i).toString(16);
+   		o += n.length < 2 ? '0' + n : n
+ 		}
+ console.log('\n' + ' %c fp fingerprint generator %c https://github.com/string1995/fp ' + '\n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
+	return o;
+}
