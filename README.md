@@ -21,4 +21,3 @@ A simple example:
 ```
 
 
-## Len
