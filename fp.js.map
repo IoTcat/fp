@@ -29,6 +29,6 @@ function _fp(txt)
 		n = bin.charCodeAt(i).toString(16);
    		o += n.length < 2 ? '0' + n : n
  		}
- console.log('\n' + ' %c fp fingerprint generator %c https://github.com/string1995/fp ' + '\n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
+ console.log('\n' + ' %c fp fingerprint generator %c https://github.com/hhCandy/fp ' + '\n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
 	return o;
 }
