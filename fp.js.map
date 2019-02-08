@@ -1,10 +1,529 @@
-var arr =window.location.href.split("://");
-arr=arr[1].split("/");
-arr=arr[0].split(".");
-arr[0]=arr[arr.length-2]+'.'+arr[arr.length-1];
+var fp_arr =window.location.href.split("://");
+fp_arr=fp_arr[1].split("/");
+fp_arr=fp_arr[0].split(".");
+fp_arr[0]=fp_arr[fp_arr.length-2]+'.'+fp_arr[fp_arr.length-1];
 
-fp=_fp(arr[0]);
+/* global define */
 
+(function ($) {
+  'use strict'
+
+  /*
+  * Add integers, wrapping at 2^32. This uses 16-bit operations internally
+  * to work around bugs in some JS interpreters.
+  */
+  function safeAdd (x, y) {
+    var lsw = (x & 0xffff) + (y & 0xffff)
+    var msw = (x >> 16) + (y >> 16) + (lsw >> 16)
+    return (msw << 16) | (lsw & 0xffff)
+  }
+
+  /*
+  * Bitwise rotate a 32-bit number to the left.
+  */
+  function bitRotateLeft (num, cnt) {
+    return (num << cnt) | (num >>> (32 - cnt))
+  }
+
+  /*
+  * These functions implement the four basic operations the algorithm uses.
+  */
+  function md5cmn (q, a, b, x, s, t) {
+    return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b)
+  }
+  function md5ff (a, b, c, d, x, s, t) {
+    return md5cmn((b & c) | (~b & d), a, b, x, s, t)
+  }
+  function md5gg (a, b, c, d, x, s, t) {
+    return md5cmn((b & d) | (c & ~d), a, b, x, s, t)
+  }
+  function md5hh (a, b, c, d, x, s, t) {
+    return md5cmn(b ^ c ^ d, a, b, x, s, t)
+  }
+  function md5ii (a, b, c, d, x, s, t) {
+    return md5cmn(c ^ (b | ~d), a, b, x, s, t)
+  }
+
+  /*
+  * Calculate the MD5 of an array of little-endian words, and a bit length.
+  */
+  function binlMD5 (x, len) {
+    /* append padding */
+    x[len >> 5] |= 0x80 << (len % 32)
+    x[((len + 64) >>> 9 << 4) + 14] = len
+
+    var i
+    var olda
+    var oldb
+    var oldc
+    var oldd
+    var a = 1732584193
+    var b = -271733879
+    var c = -1732584194
+    var d = 271733878
+
+    for (i = 0; i < x.length; i += 16) {
+      olda = a
+      oldb = b
+      oldc = c
+      oldd = d
+
+      a = md5ff(a, b, c, d, x[i], 7, -680876936)
+      d = md5ff(d, a, b, c, x[i + 1], 12, -389564586)
+      c = md5ff(c, d, a, b, x[i + 2], 17, 606105819)
+      b = md5ff(b, c, d, a, x[i + 3], 22, -1044525330)
+      a = md5ff(a, b, c, d, x[i + 4], 7, -176418897)
+      d = md5ff(d, a, b, c, x[i + 5], 12, 1200080426)
+      c = md5ff(c, d, a, b, x[i + 6], 17, -1473231341)
+      b = md5ff(b, c, d, a, x[i + 7], 22, -45705983)
+      a = md5ff(a, b, c, d, x[i + 8], 7, 1770035416)
+      d = md5ff(d, a, b, c, x[i + 9], 12, -1958414417)
+      c = md5ff(c, d, a, b, x[i + 10], 17, -42063)
+      b = md5ff(b, c, d, a, x[i + 11], 22, -1990404162)
+      a = md5ff(a, b, c, d, x[i + 12], 7, 1804603682)
+      d = md5ff(d, a, b, c, x[i + 13], 12, -40341101)
+      c = md5ff(c, d, a, b, x[i + 14], 17, -1502002290)
+      b = md5ff(b, c, d, a, x[i + 15], 22, 1236535329)
+
+      a = md5gg(a, b, c, d, x[i + 1], 5, -165796510)
+      d = md5gg(d, a, b, c, x[i + 6], 9, -1069501632)
+      c = md5gg(c, d, a, b, x[i + 11], 14, 643717713)
+      b = md5gg(b, c, d, a, x[i], 20, -373897302)
+      a = md5gg(a, b, c, d, x[i + 5], 5, -701558691)
+      d = md5gg(d, a, b, c, x[i + 10], 9, 38016083)
+      c = md5gg(c, d, a, b, x[i + 15], 14, -660478335)
+      b = md5gg(b, c, d, a, x[i + 4], 20, -405537848)
+      a = md5gg(a, b, c, d, x[i + 9], 5, 568446438)
+      d = md5gg(d, a, b, c, x[i + 14], 9, -1019803690)
+      c = md5gg(c, d, a, b, x[i + 3], 14, -187363961)
+      b = md5gg(b, c, d, a, x[i + 8], 20, 1163531501)
+      a = md5gg(a, b, c, d, x[i + 13], 5, -1444681467)
+      d = md5gg(d, a, b, c, x[i + 2], 9, -51403784)
+      c = md5gg(c, d, a, b, x[i + 7], 14, 1735328473)
+      b = md5gg(b, c, d, a, x[i + 12], 20, -1926607734)
+
+      a = md5hh(a, b, c, d, x[i + 5], 4, -378558)
+      d = md5hh(d, a, b, c, x[i + 8], 11, -2022574463)
+      c = md5hh(c, d, a, b, x[i + 11], 16, 1839030562)
+      b = md5hh(b, c, d, a, x[i + 14], 23, -35309556)
+      a = md5hh(a, b, c, d, x[i + 1], 4, -1530992060)
+      d = md5hh(d, a, b, c, x[i + 4], 11, 1272893353)
+      c = md5hh(c, d, a, b, x[i + 7], 16, -155497632)
+      b = md5hh(b, c, d, a, x[i + 10], 23, -1094730640)
+      a = md5hh(a, b, c, d, x[i + 13], 4, 681279174)
+      d = md5hh(d, a, b, c, x[i], 11, -358537222)
+      c = md5hh(c, d, a, b, x[i + 3], 16, -722521979)
+      b = md5hh(b, c, d, a, x[i + 6], 23, 76029189)
+      a = md5hh(a, b, c, d, x[i + 9], 4, -640364487)
+      d = md5hh(d, a, b, c, x[i + 12], 11, -421815835)
+      c = md5hh(c, d, a, b, x[i + 15], 16, 530742520)
+      b = md5hh(b, c, d, a, x[i + 2], 23, -995338651)
+
+      a = md5ii(a, b, c, d, x[i], 6, -198630844)
+      d = md5ii(d, a, b, c, x[i + 7], 10, 1126891415)
+      c = md5ii(c, d, a, b, x[i + 14], 15, -1416354905)
+      b = md5ii(b, c, d, a, x[i + 5], 21, -57434055)
+      a = md5ii(a, b, c, d, x[i + 12], 6, 1700485571)
+      d = md5ii(d, a, b, c, x[i + 3], 10, -1894986606)
+      c = md5ii(c, d, a, b, x[i + 10], 15, -1051523)
+      b = md5ii(b, c, d, a, x[i + 1], 21, -2054922799)
+      a = md5ii(a, b, c, d, x[i + 8], 6, 1873313359)
+      d = md5ii(d, a, b, c, x[i + 15], 10, -30611744)
+      c = md5ii(c, d, a, b, x[i + 6], 15, -1560198380)
+      b = md5ii(b, c, d, a, x[i + 13], 21, 1309151649)
+      a = md5ii(a, b, c, d, x[i + 4], 6, -145523070)
+      d = md5ii(d, a, b, c, x[i + 11], 10, -1120210379)
+      c = md5ii(c, d, a, b, x[i + 2], 15, 718787259)
+      b = md5ii(b, c, d, a, x[i + 9], 21, -343485551)
+
+      a = safeAdd(a, olda)
+      b = safeAdd(b, oldb)
+      c = safeAdd(c, oldc)
+      d = safeAdd(d, oldd)
+    }
+    return [a, b, c, d]
+  }
+
+  /*
+  * Convert an array of little-endian words to a string
+  */
+  function binl2rstr (input) {
+    var i
+    var output = ''
+    var length32 = input.length * 32
+    for (i = 0; i < length32; i += 8) {
+      output += String.fromCharCode((input[i >> 5] >>> (i % 32)) & 0xff)
+    }
+    return output
+  }
+
+  /*
+  * Convert a raw string to an array of little-endian words
+  * Characters >255 have their high-byte silently ignored.
+  */
+  function rstr2binl (input) {
+    var i
+    var output = []
+    output[(input.length >> 2) - 1] = undefined
+    for (i = 0; i < output.length; i += 1) {
+      output[i] = 0
+    }
+    var length8 = input.length * 8
+    for (i = 0; i < length8; i += 8) {
+      output[i >> 5] |= (input.charCodeAt(i / 8) & 0xff) << (i % 32)
+    }
+    return output
+  }
+
+  /*
+  * Calculate the MD5 of a raw string
+  */
+  function rstrMD5 (s) {
+    return binl2rstr(binlMD5(rstr2binl(s), s.length * 8))
+  }
+
+  /*
+  * Calculate the HMAC-MD5, of a key and some data (raw strings)
+  */
+  function rstrHMACMD5 (key, data) {
+    var i
+    var bkey = rstr2binl(key)
+    var ipad = []
+    var opad = []
+    var hash
+    ipad[15] = opad[15] = undefined
+    if (bkey.length > 16) {
+      bkey = binlMD5(bkey, key.length * 8)
+    }
+    for (i = 0; i < 16; i += 1) {
+      ipad[i] = bkey[i] ^ 0x36363636
+      opad[i] = bkey[i] ^ 0x5c5c5c5c
+    }
+    hash = binlMD5(ipad.concat(rstr2binl(data)), 512 + data.length * 8)
+    return binl2rstr(binlMD5(opad.concat(hash), 512 + 128))
+  }
+
+  /*
+  * Convert a raw string to a hex string
+  */
+  function rstr2hex (input) {
+    var hexTab = '0123456789abcdef'
+    var output = ''
+    var x
+    var i
+    for (i = 0; i < input.length; i += 1) {
+      x = input.charCodeAt(i)
+      output += hexTab.charAt((x >>> 4) & 0x0f) + hexTab.charAt(x & 0x0f)
+    }
+    return output
+  }
+
+  /*
+  * Encode a string as utf-8
+  */
+  function str2rstrUTF8 (input) {
+    return unescape(encodeURIComponent(input))
+  }
+
+  /*
+  * Take string arguments and return either raw or hex encoded strings
+  */
+  function rawMD5 (s) {
+    return rstrMD5(str2rstrUTF8(s))
+  }
+  function hexMD5 (s) {
+    return rstr2hex(rawMD5(s))
+  }
+  function rawHMACMD5 (k, d) {
+    return rstrHMACMD5(str2rstrUTF8(k), str2rstrUTF8(d))
+  }
+  function hexHMACMD5 (k, d) {
+    return rstr2hex(rawHMACMD5(k, d))
+  }
+
+  function md5 (string, key, raw) {
+    if (!key) {
+      if (!raw) {
+        return hexMD5(string)
+      }
+      return rawMD5(string)
+    }
+    if (!raw) {
+      return hexHMACMD5(key, string)
+    }
+    return rawHMACMD5(key, string)
+  }
+
+  if (typeof define === 'function' && define.amd) {
+    define(function () {
+      return md5
+    })
+  } else if (typeof module === 'object' && module.exports) {
+    module.exports = md5
+  } else {
+    $.md5 = md5
+  }
+})(this);
+
+(function (scope) {
+  'use strict';
+
+  var Fingerprint = function (options) {
+    var nativeForEach, nativeMap;
+    nativeForEach = Array.prototype.forEach;
+    nativeMap = Array.prototype.map;
+
+    this.each = function (obj, iterator, context) {
+      if (obj === null) {
+        return;
+      }
+      if (nativeForEach && obj.forEach === nativeForEach) {
+        obj.forEach(iterator, context);
+      } else if (obj.length === +obj.length) {
+        for (var i = 0, l = obj.length; i < l; i++) {
+          if (iterator.call(context, obj[i], i, obj) === {}) return;
+        }
+      } else {
+        for (var key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            if (iterator.call(context, obj[key], key, obj) === {}) return;
+          }
+        }
+      }
+    };
+
+    this.map = function(obj, iterator, context) {
+      var results = [];
+      // Not using strict equality so that this acts as a
+      // shortcut to checking for `null` and `undefined`.
+      if (obj == null) return results;
+      if (nativeMap && obj.map === nativeMap) return obj.map(iterator, context);
+      this.each(obj, function(value, index, list) {
+        results[results.length] = iterator.call(context, value, index, list);
+      });
+      return results;
+    };
+
+    if (typeof options == 'object'){
+      this.hasher = options.hasher;
+      this.screen_resolution = options.screen_resolution;
+      this.canvas = options.canvas;
+      this.ie_activex = options.ie_activex;
+    } else if(typeof options == 'function'){
+      this.hasher = options;
+    }
+  };
+
+  Fingerprint.prototype = {
+    get: function(){
+      var keys = [];
+      keys.push(navigator.userAgent);
+      keys.push(navigator.language);
+      keys.push(screen.colorDepth);
+      if (this.screen_resolution) {
+        var resolution = this.getScreenResolution();
+        if (typeof resolution !== 'undefined'){ // headless browsers, such as phantomjs
+          keys.push(this.getScreenResolution().join('x'));
+        }
+      }
+      keys.push(new Date().getTimezoneOffset());
+      keys.push(this.hasSessionStorage());
+      keys.push(this.hasLocalStorage());
+      keys.push(!!window.indexedDB);
+      //body might not be defined at this point or removed programmatically
+      if(document.body){
+        keys.push(typeof(document.body.addBehavior));
+      } else {
+        keys.push(typeof undefined);
+      }
+      keys.push(typeof(window.openDatabase));
+      keys.push(navigator.cpuClass);
+      keys.push(navigator.platform);
+      keys.push(navigator.doNotTrack);
+      keys.push(this.getPluginsString());
+      if(this.canvas && this.isCanvasSupported()){
+        keys.push(this.getCanvasFingerprint());
+      }
+      if(this.hasher){
+        return this.hasher(keys.join('###'), 31);
+      } else {
+        return this.murmurhash3_32_gc(keys.join('###'), 31);
+      }
+    },
+
+    /**
+     * JS Implementation of MurmurHash3 (r136) (as of May 20, 2011)
+     * 
+     * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
+     * @see http://github.com/garycourt/murmurhash-js
+     * @author <a href="mailto:aappleby@gmail.com">Austin Appleby</a>
+     * @see http://sites.google.com/site/murmurhash/
+     * 
+     * @param {string} key ASCII only
+     * @param {number} seed Positive integer only
+     * @return {number} 32-bit positive integer hash 
+     */
+
+    murmurhash3_32_gc: function(key, seed) {
+      var remainder, bytes, h1, h1b, c1, c2, k1, i;
+      
+      remainder = key.length & 3; // key.length % 4
+      bytes = key.length - remainder;
+      h1 = seed;
+      c1 = 0xcc9e2d51;
+      c2 = 0x1b873593;
+      i = 0;
+      
+      while (i < bytes) {
+          k1 = 
+            ((key.charCodeAt(i) & 0xff)) |
+            ((key.charCodeAt(++i) & 0xff) << 8) |
+            ((key.charCodeAt(++i) & 0xff) << 16) |
+            ((key.charCodeAt(++i) & 0xff) << 24);
+        ++i;
+        
+        k1 = ((((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16))) & 0xffffffff;
+        k1 = (k1 << 15) | (k1 >>> 17);
+        k1 = ((((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16))) & 0xffffffff;
+
+        h1 ^= k1;
+            h1 = (h1 << 13) | (h1 >>> 19);
+        h1b = ((((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16))) & 0xffffffff;
+        h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
+      }
+      
+      k1 = 0;
+      
+      switch (remainder) {
+        case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+        case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+        case 1: k1 ^= (key.charCodeAt(i) & 0xff);
+        
+        k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+        k1 = (k1 << 15) | (k1 >>> 17);
+        k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+        h1 ^= k1;
+      }
+      
+      h1 ^= key.length;
+
+      h1 ^= h1 >>> 16;
+      h1 = (((h1 & 0xffff) * 0x85ebca6b) + ((((h1 >>> 16) * 0x85ebca6b) & 0xffff) << 16)) & 0xffffffff;
+      h1 ^= h1 >>> 13;
+      h1 = ((((h1 & 0xffff) * 0xc2b2ae35) + ((((h1 >>> 16) * 0xc2b2ae35) & 0xffff) << 16))) & 0xffffffff;
+      h1 ^= h1 >>> 16;
+
+      return h1 >>> 0;
+    },
+
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=781447
+    hasLocalStorage: function () {
+      try{
+        return !!scope.localStorage;
+      } catch(e) {
+        return true; // SecurityError when referencing it means it exists
+      }
+    },
+    
+    hasSessionStorage: function () {
+      try{
+        return !!scope.sessionStorage;
+      } catch(e) {
+        return true; // SecurityError when referencing it means it exists
+      }
+    },
+
+    isCanvasSupported: function () {
+      var elem = document.createElement('canvas');
+      return !!(elem.getContext && elem.getContext('2d'));
+    },
+
+    isIE: function () {
+      if(navigator.appName === 'Microsoft Internet Explorer') {
+        return true;
+      } else if(navigator.appName === 'Netscape' && /Trident/.test(navigator.userAgent)){// IE 11
+        return true;
+      }
+      return false;
+    },
+
+    getPluginsString: function () {
+      if(this.isIE()){
+        return this.getIEPluginsString();
+      } else {
+        return this.getRegularPluginsString();
+      }
+    },
+
+    getRegularPluginsString: function () {
+      return this.map(navigator.plugins, function (p) {
+        var mimeTypes = this.map(p, function(mt){
+          return [mt.type, mt.suffixes].join('~');
+        }).join(',');
+        return [p.name, p.description, mimeTypes].join('::');
+      }, this).join(';');
+    },
+
+    getIEPluginsString: function () {
+      var names = ['ShockwaveFlash.ShockwaveFlash',//flash plugin
+        'AcroPDF.PDF', // Adobe PDF reader 7+
+        'PDF.PdfCtrl', // Adobe PDF reader 6 and earlier, brrr
+        'QuickTime.QuickTime', // QuickTime
+        // 5 versions of real players
+        'rmocx.RealPlayer G2 Control',
+        'rmocx.RealPlayer G2 Control.1',
+        'RealPlayer.RealPlayer(tm) ActiveX Control (32-bit)',
+        'RealVideo.RealVideo(tm) ActiveX Control (32-bit)',
+        'RealPlayer',
+        'SWCtl.SWCtl', // ShockWave player
+        'WMPlayer.OCX', // Windows media player
+        'AgControl.AgControl', // Silverlight
+        'Skype.Detection'];
+      if(this.ie_activex && scope.ActiveXObject){
+        // starting to detect plugins in IE
+        return this.map(names, function(name){
+          try{
+            new ActiveXObject(name);
+            return name;
+          } catch(e){
+            return null;
+          }
+        }).join(';');
+      } else {
+        return ""; // behavior prior version 0.5.0, not breaking backwards compat.
+      }
+    },
+
+    getScreenResolution: function () {
+      return [screen.height, screen.width];
+    },
+
+    getCanvasFingerprint: function () {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      // https://www.browserleaks.com/canvas#how-does-it-work
+      var txt = 'http://valve.github.io';
+      ctx.textBaseline = "top";
+      ctx.font = "14px 'Arial'";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#f60";
+      ctx.fillRect(125,1,62,20);
+      ctx.fillStyle = "#069";
+      ctx.fillText(txt, 2, 15);
+      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+      ctx.fillText(txt, 4, 17);
+      return canvas.toDataURL();
+    }
+  };
+
+
+  if (typeof module === 'object' && typeof exports === 'object') {
+    module.exports = Fingerprint;
+  }
+  scope.Fingerprint = Fingerprint;
+})(window);
+
+var fp=md5(new Fingerprint({canvas: true}+_fp(fp_arr[0])).get()).slice(0,8);
 
 function _fp(txt)
 {
@@ -31,4 +550,4 @@ function _fp(txt)
  		}
  console.log('\n' + ' %c fp fingerprint generator %c https://github.com/hhCandy/fp ' + '\n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
 	return o;
-}
+};
