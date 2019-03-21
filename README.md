@@ -10,7 +10,7 @@ Basing on fp, it becomes possible to release your whole site from cookie which i
 
 ## Quick start
 
-[Click here to see how it works!](https://cn.yimian.xyz/etc/fp/)
+[Click here to see how it works!](https://fp.yimian.xyz/demo.html)
 
 
 ## How to use fp?
