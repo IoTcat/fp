@@ -18,8 +18,9 @@ To use fp, you must include the fp.js first.</br>
 The generated fingerprint is stored in global variabel fp.</br>
 A simple example:
 ```html
-<script type="text/javascript" src="https://cdn.yimian.ac.cn/fp/fp.js"></script>
+<script type="text/javascript" src="https://cdn.yimian.xyz/fp/fp.min.js"></script>
 <script type="text/javascript">alert(fp);</script>
 ```
 
-
+## Background
+This project is developed from https://github.com/Valve/fingerprintjs
