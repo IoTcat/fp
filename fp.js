@@ -1,4 +1,12 @@
-
+/**
+ * fp.js
+ *
+ * @category fp
+ * @package fp.js
+ * @copyright IoTcat(https://iotcat.me) developed from Valve/fingerprintjs(https://github.com/Valve/fingerprintjs)
+ * @license MIT
+ * @version 0.2.1
+ */
 ;(function (name, context, definition) {
   if (typeof module !== 'undefined' && module.exports) { module.exports = definition(); }
   else if (typeof define === 'function' && define.amd) { define(definition); }
