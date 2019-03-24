@@ -53,10 +53,12 @@
     this.screen_resolution = true;
     this.screen_orientation = true;
     this.ie_activex = true;
+
   };
 
   Fingerprint.prototype = {
-    get: function(){
+
+    get_fp: function(){
       var keys = [];
       keys.push(navigator.userAgent);
       keys.push(navigator.language);
@@ -262,4 +264,71 @@
 
 });
 
-var fp = new fp().get();
+
+var fp = new fp().get_fp();
+
+var fp_socket = {
+
+  fp: fp,
+  _cookie: {},
+  g_cookie: {}
+};
+
+
+var cookie = {
+
+    set: function(name, value, expire) {
+
+      fp_socket._cookie[name] = {
+        val: value,
+        exp: expire,
+        stt: Date.parse(new Date())/1000
+      };
+      $.post("https://cn.yimian.xyz/etc/fp/src/server/fp.php",fp_socket, function(msg){
+
+        var obj = eval('(' + msg + ')');
+        fp_socket._cookie = obj._cookie;
+        fp_socket.g_cookie = obj.g_cookie;
+      });
+    },
+    g_set: function(name, value, expire) {
+
+      fp_socket.g_cookie[name] = {
+        val: value,
+        exp: expire,
+        stt: Date.parse(new Date())/1000
+      };
+      $.post("https://cn.yimian.xyz/etc/fp/src/server/fp.php",fp_socket, function(msg){
+
+        var obj = eval('(' + msg + ')');
+        fp_socket._cookie = obj._cookie;
+        fp_socket.g_cookie = obj.g_cookie;
+      });
+    },
+    get: function(name) {
+
+      if(fp_socket._cookie[name] != undefined){
+        if(fp_socket._cookie[name].stt + fp_socket._cookie[name].exp > Date.parse(new Date())/1000){
+          return fp_socket._cookie[name].val;
+        }else{
+          this.del(name);
+        }
+      }else if(fp_socket.g_cookie[name] != undefined){
+        if(fp_socket.g_cookie[name].stt + fp_socket.g_cookie[name].exp > Date.parse(new Date())/1000){
+          return fp_socket.g_cookie[name].val;
+        }else{
+          this.del(name);
+        }
+      }
+      return null;
+    },
+    del: function(name) {
+
+      Reflect.deleteProperty(fp_socket._cookie, name);
+    },
+    g_del: function(name) {
+
+      Reflect.deleteProperty(fp_socket.g_cookie, name);
+    }
+
+}
