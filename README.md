@@ -24,3 +24,4 @@ A simple example:
 
 ## Background
 This project is developed from https://github.com/Valve/fingerprintjs
+
