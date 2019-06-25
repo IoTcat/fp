@@ -1,5 +1,5 @@
 
-const cookie = {
+var cookie = {
   set: function (name, value) {
     var Days = 3000;
     var exp = new Date();
@@ -36,7 +36,7 @@ const cookie = {
 })('fp', this, function () {
   'use strict'
 
-  const MaxDiff = 0.94;
+  var MaxDiff = 0.94;
 
 
   var x64Add = function (m, n) {
