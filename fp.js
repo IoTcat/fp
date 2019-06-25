@@ -1432,6 +1432,7 @@ const cookie = {
 
     }
     rate = 1 - rate / index;
+    rate = (rate < 0) ? 0 : rate;
     _fp_acc = rate;
     _fp_detail = details;
     if (rate < MaxDiff) {
