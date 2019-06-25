@@ -1,44 +1,33 @@
-
-const cookie = {
-  set: function (name, value) {
-    var Days = 3000;
-    var exp = new Date();
-    exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
-    document.cookie = name + '=' + escape(value) + ';expires=' + exp.toGMTString() + ";path=/";
-  },
-  get: function (name) {
-    var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)');
-    if (arr = document.cookie.match(reg)) {
-      return unescape(arr[2]);
-    } else {
-      return null;
-    }
-  },
-  del: function (name) {
-    var exp = new Date();
-    exp.setTime(exp.getTime() - 1);
-    var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)');
-    if (arr = document.cookie.match(reg)) {
-      var cval = unescape(arr[2]);
-    } else {
-      var cval = null;
-    }
-    if (cval != null) {
-      document.cookie = name + '=' + cval + ';expires=' + exp.toGMTString();
-    }
-  }
-};
-
+/*
+* Fingerprintjs2 2.1.0 - Modern & flexible browser fingerprint library v2
+* https://github.com/Valve/fingerprintjs2
+* Copyright (c) 2015 Valentin Vasilyev (valentin.vasilyev@outlook.com)
+* Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL VALENTIN VASILYEV BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /* global define */
 (function (name, context, definition) {
   'use strict'
   if (typeof window !== 'undefined' && typeof define === 'function' && define.amd) { define(definition) } else if (typeof module !== 'undefined' && module.exports) { module.exports = definition() } else if (context.exports) { context.exports = definition() } else { context[name] = definition() }
-})('fp', this, function () {
+})('_fp', this, function () {
   'use strict'
 
-  const MaxDiff = 0.94;
+  /// MurmurHash3 related functions
 
-
+  //
+  // Given two 64bit ints (as an array of two 32bit ints) returns the two
+  // added together as a 64bit int (as an array of two 32bit ints).
+  //
   var x64Add = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
     n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff]
@@ -57,7 +46,10 @@ const cookie = {
     return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]]
   }
 
-
+  //
+  // Given two 64bit ints (as an array of two 32bit ints) returns the two
+  // multiplied together as a 64bit int (as an array of two 32bit ints).
+  //
   var x64Multiply = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
     n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff]
@@ -84,7 +76,11 @@ const cookie = {
     o[0] &= 0xffff
     return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]]
   }
-
+  //
+  // Given a 64bit int (as an array of two 32bit ints) and an int
+  // representing a number of bit positions, returns the 64bit int (as an
+  // array of two 32bit ints) rotated left by that number of positions.
+  //
   var x64Rotl = function (m, n) {
     n %= 64
     if (n === 32) {
@@ -96,7 +92,11 @@ const cookie = {
       return [(m[1] << n) | (m[0] >>> (32 - n)), (m[0] << n) | (m[1] >>> (32 - n))]
     }
   }
-
+  //
+  // Given a 64bit int (as an array of two 32bit ints) and an int
+  // representing a number of bit positions, returns the 64bit int (as an
+  // array of two 32bit ints) shifted left by that number of positions.
+  //
   var x64LeftShift = function (m, n) {
     n %= 64
     if (n === 0) {
@@ -107,11 +107,18 @@ const cookie = {
       return [m[1] << (n - 32), 0]
     }
   }
-
+  //
+  // Given two 64bit ints (as an array of two 32bit ints) returns the two
+  // xored together as a 64bit int (as an array of two 32bit ints).
+  //
   var x64Xor = function (m, n) {
     return [m[0] ^ n[0], m[1] ^ n[1]]
   }
-
+  //
+  // Given a block, returns murmurHash3's final x64 mix of that block.
+  // (`[0, h[0] >>> 1]` is a 33 bit unsigned right shift. This is the
+  // only place where we need to right shift 64bit ints.)
+  //
   var x64Fmix = function (h) {
     h = x64Xor(h, [0, h[0] >>> 1])
     h = x64Multiply(h, [0xff51afd7, 0xed558ccd])
@@ -121,7 +128,10 @@ const cookie = {
     return h
   }
 
-
+  //
+  // Given a string and an optional seed as an int, returns a 128 bit
+  // hash using the x64 flavor of MurmurHash3, as an unsigned hex.
+  //
   var x64hash128 = function (key, seed) {
     key = key || ''
     seed = seed || 0
@@ -359,6 +369,7 @@ const cookie = {
     context.startRendering()
 
     var audioTimeoutId = setTimeout(function () {
+      console.warn('Audio fingerprint timed out. Please report bug at https://github.com/Valve/fingerprintjs2 with your user agent: "' + navigator.userAgent + '".')
       context.oncomplete = function () { }
       context = null
       return done('audioTimeout')
@@ -1408,104 +1419,7 @@ const cookie = {
     })
   }
 
-  var _fp_val = null;
-  var _fp_detail = null;
-  var _fp_acc = null;
-  var _fp_LastChangeTime = null;
-  var _fp_TimeUsed = null;
-
-  var d1 = new Date();
-  Fingerprint2.get(function (components) {
-    var murmur = x64hash128(components.map(function (pair) { return pair.value }).join(), 15)
-    murmur = murmur.substr(0, 8);
-    var rate = 0;
-    for (var index in components) {
-      var obj = components[index]
-      var line = obj.key + " = " + String(obj.value).substr(0, 100);
-      details += line + "\n"
-      line = window.btoa(line);
-      if (cookie.get('_fp_ref_' + index)) rate = rate + 1 - levenshteinenator(line, cookie.get('_fp_ref_' + index));
-      else {
-        cookie.set('_fp_ref_' + index, line);
-        rate += 1;
-      }
-
-    }
-    rate = 1 - rate / index;
-    _fp_acc = rate;
-    _fp_detail = details;
-    if (rate < MaxDiff) {
-
-      for (var index in components) {
-        var obj = components[index]
-        var line = obj.key + " = " + String(obj.value).substr(0, 100);
-        line = window.btoa(line);
-
-        cookie.set('_fp_ref_' + index, line);
-      }
-    }
-
-    var d2 = new Date()
-    var time = d2 - d1;
-
-    _fp_TimeUsed = time;
-
-    if (rate < MaxDiff) {
-      cookie.set('_fp', murmur);
-      cookie.set('_fp_LastChangeTime', d2);
-      _fp_LastChangeTime = d2;
-      _fp_val = murmur;
-    }
-    else {
-      _fp_LastChangeTime = cookie.get('_fp_LastChangeTime');
-      _fp_val = cookie.get('_fp');
-    }
-    var details = "";
-    console.log('\n' + ' %c fp v2.0.1 %c ' + _fp_val + '::' + String(_fp_acc).substr(0, 4) + '::' + _fp_TimeUsed + 'ms %c https://fp.yimian.xyz \n', 'color: #00FFFF; background: #030307; padding:5px 0;','color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
-
-  })
-
-  var levenshteinenator = (function () {
-    function levenshteinenator(a, b) {
-      var cost;
-      var m = a.length;
-      var n = b.length;
-
-      if (m < n) {
-        var c = a; a = b; b = c;
-        var o = m; m = n; n = o;
-      }
-
-      var r = []; r[0] = [];
-      for (var c = 0; c < n + 1; ++c) {
-        r[0][c] = c;
-      }
-
-      for (var i = 1; i < m + 1; ++i) {
-        r[i] = []; r[i][0] = i;
-        for (var j = 1; j < n + 1; ++j) {
-          cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
-          r[i][j] = minimator(r[i - 1][j] + 1, r[i][j - 1] + 1, r[i - 1][j - 1] + cost);
-        }
-      }
-      return 1 - r[m - 1][n - 1] / Math.max(m, n);
-    }
-    function minimator(x, y, z) {
-      if (x <= y && x <= z) return x;
-      if (y <= x && y <= z) return y;
-      return z;
-    }
-    return levenshteinenator;
-  }());
-
-  var fp = function (f) {
-    if (!_fp_val) {
-      setTimeout(fp, 1, f);
-      return;
-    }
-    f(_fp_val, _fp_acc, _fp_detail, _fp_LastChangeTime, _fp_TimeUsed);
-  };
-
-  return fp;
+  Fingerprint2.x64hash128 = x64hash128
+  Fingerprint2.VERSION = '2.1.0'
+  return Fingerprint2
 })
-

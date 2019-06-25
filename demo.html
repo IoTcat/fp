@@ -1,3 +1,79 @@
-<script type="text/javascript" src="https://cdn.yimian.xyz/fp/fp.min.js"></script>
-<script type="text/javascript">alert('Your fp is: '+fp);</script>
-<a href="https://fp.yimian.xyz">Go to fp's Web Page!</a>
+<!doctype html>
+<html>
+<head>
+  <title>fp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{
+      font-family: sans-serif;
+      max-width: 48em;
+      margin: auto;
+      padding: 0 5%;
+      background: #222;
+      color: #fff;
+    }
+    h1 {
+      margin: 2em 0 0;
+    }
+    p {
+      font-size: 1.2em
+    }
+    button {
+      border: none;
+      color: #fff;
+      font-size: 1.2em;
+      background: #27e;
+      padding: 0.5em 0.75em 0.6em;
+      border-radius: 3px;
+      box-shadow: 0 3px 0 #05c;
+      outline: none;
+    }
+    button:active {
+      transform: translateY(3px);
+      box-shadow: none;
+    }
+    strong {
+      display: block;
+      letter-spacing: 1px;
+      word-wrap: break-word;
+    }
+    @media (min-width: 32em) {
+      h1 {
+        font-size: 4em;
+      }
+      strong {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+
+  <h1>fp</h1>
+
+
+  <p>  <button type="button" id="btn">Your fp: <strong id="fp"></strong></button></p>
+  <p>Time Used: <var id="time"></var> ms  &nbsp;Accuracy: <var id="acc"></var> %</p>
+  <p><strong>Detailed information: </strong></p>
+  <pre id="details"></pre>
+
+  <script src="fp.js"></script>
+  <script>
+
+document.querySelector("#btn").addEventListener("click", function () {
+  location.reload();
+})
+
+fp((f, acc, detail, CreateTime, TimeUsed)=>{
+
+        document.querySelector("#acc").textContent = String(acc * 100).substr(0, 6);
+        document.querySelector("#time").textContent = TimeUsed
+        document.querySelector("#fp").textContent = f
+        document.querySelector("#details").textContent = detail;
+})
+
+
+  </script>
+</body>
+</html>
