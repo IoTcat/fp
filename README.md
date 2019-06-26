@@ -1,5 +1,5 @@
 # fp
-Let fp work with Cookie, make it stable and reliable!
+Let fp work with Cookie, cross-domain, make it stable and reliable!
 
 
 ## What is fp?
@@ -24,15 +24,51 @@ A simple example:
 ```
 
 ## Advanced Usage
+
+### Get fp
 ```html
 <script type="text/javascript" src="./fp.min.js"></script>
 <script type="text/javascript">
-  fp(function(myFp, acc, detail, createdTime, timeUsed){
-      alert('My fp: ' + myFp);
-      alert('Accuracy: ' + acc);
-      alert('fp Details: ' + detail);
-      alert('fp Created Time: ' + createdTime);
-      alert('Time Usage to calculate: ' + timeUsed);
+  fp(function(myFp, key, acc, detail, createdTime, timeUsed, detailObj){
+      console.log('My fp: ' + myFp);
+      console.log('fp key: ' + key);
+      console.log('Accuracy: ' + acc);
+      console.log('fp Details: ' + detail);
+      console.log('fp Created Time: ' + createdTime);
+      console.log('Time Usage to calculate: ' + timeUsed);
+      console.log(detailObj);
+  });
+</script>
+```
+
+### Recover fp from key (cross-domain purpose)
+```html
+<script type="text/javascript" src="./fp.min.js"></script>
+<script type="text/javascript">
+  fp(/*fp key*/'eyJfZnAiOiI1YjI4Y2U5ZCIsIl9mcF9yZWZfIjoiZVZiSmJVVjlWNGFzS0JZOE10THRZQmJVTkVkSkk5WUpJZElnYlJJUVpWY0lhZGJKZVFZNWI5TkVMRmJKWlZJZ09KZTlkMEwxWkZVZExOVUZJVWJOWkpJNVpvWkZhOVpVY0ZjSklCY0pZeEl4Y0pNQmJKYlJkeFlCYkJZQlk0YlViQlpoSUJaRllGWUZiY0xaY1JZQllRVHRRTlpsUmxkSlFkSUZiOVlZUUJRNVZGUUZRaFRWV0ZlTmRJWVZRVlpKYjVUQVprUmhOUmRFTkJNSmJvWmhaNVpKWmhaTmFvY0phTWN3VEpaSlpSVTlJWkxOWk1jeGJGY0JiRmExTEpUeFk1TE5MSlFsSVZPUU5ZTyIsIl9mcF9MYXN0Q2hhbmdlVGltZSI6IjE1NjE1MTkxNzYifQ==', function(myFp, key, acc, detail, createdTime, timeUsed, detailObj){
+      console.log('My fp: ' + myFp);
+      console.log('fp key: ' + key);
+      console.log('Accuracy: ' + acc);
+      console.log('fp Details: ' + detail);
+      console.log('fp Created Time: ' + createdTime);
+      console.log('Time Usage to calculate: ' + timeUsed);
+      console.log(detailObj);
+  });
+</script>
+```
+
+### Reset fp
+```html
+<script type="text/javascript" src="./fp.min.js"></script>
+<script type="text/javascript">
+  fp('reset', function(myFp, key, acc, detail, createdTime, timeUsed, detailObj){
+      console.log('My fp: ' + myFp);
+      console.log('fp key: ' + key);
+      console.log('Accuracy: ' + acc);
+      console.log('fp Details: ' + detail);
+      console.log('fp Created Time: ' + createdTime);
+      console.log('Time Usage to calculate: ' + timeUsed);
+      console.log(detailObj);
   });
 </script>
 ```
