@@ -42,7 +42,7 @@ var cookie = {
 })('fp', this, function () {
   'use strict'
 
-  var MaxDiff = 0.89;
+  var MaxDiff = 0.8;
 
   var x64Add = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
