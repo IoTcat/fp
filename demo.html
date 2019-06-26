@@ -59,14 +59,14 @@
   <p><strong>Detailed information: </strong></p>
   <pre id="details"></pre>
 
-  <script src="fp.js"></script>
+  <script src="fp.min.js"></script>
   <script>
 
 document.querySelector("#btn").addEventListener("click", function () {
   location.reload();
 })
 
-fp('eyJfZnAiOiI1YjI4Y2U5ZCIsIl9mcF9yZWZfIjoiZVZiSmJVVjlWNGFzS0JZOE10THRZQmJVTkVkSkk5WUpJZElnYlJJUVpWY0lhZGJKZVFZNWI5TkVMRmJKWlZJZ09KZTlkMEwxWkZVZExOVUZJVWJOWkpJNVpvWkZhOVpVY0ZjSklCY0pZeEl4Y0pNQmJKYlJkeFlCYkJZQlk0YlViQlpoSUJaRllGWUZiY0xaY1JZQllRVHRRTlpsUmxkSlFkSUZiOVlZUUJRNVZGUUZRaFRWV0ZlTmRJWVZRVlpKYjVUQVprUmhOUmRFTkJNSmJvWmhaNVpKWmhaTmFvY0phTWN3VEpaSlpSVTlJWkxOWk1jeGJGY0JiRmExTEpUeFk1TE5MSlFsSVZPUU5ZTyIsIl9mcF9MYXN0Q2hhbmdlVGltZSI6IjE1NjE1MTkxNzYifQ==', (f, key, acc, detail, CreateTime, TimeUsed, detailObj)=>{
+fp((f, key, acc, detail, CreateTime, TimeUsed, detailObj)=>{
 
         document.querySelector("#acc").textContent = String(acc * 100).substr(0, 6);
         document.querySelector("#time").textContent = TimeUsed
