@@ -1,3 +1,9 @@
+/*
+ * @Author: IoTcat (https://iotcat.me) 
+ * @Date: 2019-06-26 11:34:32 
+ * @Last Modified by: 
+ * @Last Modified time: 2019-06-26 11:38:03
+ */
 
 var cookie = {
   set: function (name, value) {
@@ -37,7 +43,6 @@ var cookie = {
   'use strict'
 
   var MaxDiff = 0.94;
-
 
   var x64Add = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
@@ -1402,69 +1407,68 @@ var cookie = {
             newComponents.push({ key: component.key, value: component.value })
           }
         }
-      }
-      var murmur = x64hash128(map(newComponents, function (component) { return component.value }).join('~~~'), 31)
-      callback(murmur, newComponents)
-    })
-  }
+      };
+      var murmur = x64hash128(map(newComponents, function (component) { return component.value }).join('~~~'), 31);
+      callback(murmur, newComponents);
+    });
+  };
 
   var _fp_val = null;
-  var _fp_detail = null;
+  var _fp_detail = "";
   var _fp_acc = null;
   var _fp_LastChangeTime = null;
   var _fp_TimeUsed = null;
+  var _fp_detailObj = {};
 
   var d1 = new Date();
   Fingerprint2.get(function (components) {
-    var murmur = x64hash128(components.map(function (pair) { return pair.value }).join(), 15)
+    var murmur = x64hash128(components.map(function (pair) { return pair.value }).join(), 15);
     murmur = murmur.substr(0, 8);
     var rate = 0;
     for (var index in components) {
       var obj = components[index]
       var line = obj.key + " = " + String(obj.value).substr(0, 100);
-      details += line + "\n"
-      line = window.btoa(line);
-      if (cookie.get('_fp_ref_' + index)) rate = rate + 1 - levenshteinenator(line, cookie.get('_fp_ref_' + index));
-      else {
-        cookie.set('_fp_ref_' + index, line);
-        rate += 1;
-      }
-
+      _fp_detail += line + "\n";
+      _fp_detailObj[obj.key] = String(obj.value).substr(0, 100);
     }
-    rate = 1 - rate / index;
-    rate = (rate < 0) ? 0 : rate;
+    if (cookie.get('_fp_ref_')) rate = levenshteinenator(Compress(window.btoa(JSON.stringify(_fp_detailObj))), cookie.get('_fp_ref_'));
+    else {
+      rate = 0;
+    }
+    //rate = (rate < 0) ? 0 : rate;
     _fp_acc = rate;
-    _fp_detail = details;
     if (rate < MaxDiff) {
-
-      for (var index in components) {
-        var obj = components[index]
-        var line = obj.key + " = " + String(obj.value).substr(0, 100);
-        line = window.btoa(line);
-
-        cookie.set('_fp_ref_' + index, line);
-      }
+      cookie.set('_fp_ref_', Compress(window.btoa(JSON.stringify(_fp_detailObj))));
     }
 
-    var d2 = new Date()
+    var d2 = new Date();
     var time = d2 - d1;
 
     _fp_TimeUsed = time;
 
     if (rate < MaxDiff) {
       cookie.set('_fp', murmur);
-      cookie.set('_fp_LastChangeTime', d2);
+      cookie.set('_fp_LastChangeTime', Date.parse(d2) / 1000);
       _fp_LastChangeTime = d2;
       _fp_val = murmur;
     }
     else {
-      _fp_LastChangeTime = cookie.get('_fp_LastChangeTime');
+      _fp_LastChangeTime = new Date(cookie.get('_fp_LastChangeTime') * 1000);
       _fp_val = cookie.get('_fp');
     }
-    var details = "";
-    console.log('\n' + ' %c fp v2.0.1 %c ' + _fp_val + '::' + String(_fp_acc).substr(0, 4) + '::' + _fp_TimeUsed + 'ms %c https://fp.yimian.xyz \n', 'color: #00FFFF; background: #030307; padding:5px 0;','color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
+    console.log('\n' + ' %c fp v2.0.1 %c ' + _fp_val + '::' + String(_fp_acc * 100).substr(0, 4) + '%::' + _fp_TimeUsed + 'ms %c https://fp.yimian.xyz \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
 
   })
+
+  function Compress(strNormalString) {
+    var strCompressedString = "";
+
+    for (var i = 0; i < strNormalString.length; i += Math.round(strNormalString.length / 289)) {
+      strCompressedString += strNormalString.charAt(i);
+    }
+    return strCompressedString;
+  }
+
 
   var levenshteinenator = (function () {
     function levenshteinenator(a, b) {
@@ -1504,9 +1508,8 @@ var cookie = {
       setTimeout(fp, 1, f);
       return;
     }
-    f(_fp_val, _fp_acc, _fp_detail, _fp_LastChangeTime, _fp_TimeUsed);
+    f(_fp_val, _fp_acc, _fp_detail, _fp_LastChangeTime, _fp_TimeUsed, _fp_detailObj);
   };
 
   return fp;
-})
-
+});
