@@ -42,7 +42,7 @@ var cookie = {
 })('fp', this, function () {
   'use strict'
 
-  var MaxDiff = 0.94;
+  var MaxDiff = 0.89;
 
   var x64Add = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
@@ -1419,9 +1419,12 @@ var cookie = {
   var _fp_LastChangeTime = null;
   var _fp_TimeUsed = null;
   var _fp_detailObj = {};
+  var _fp_key = null;
+  var _fp_ready = false;
 
-  var d1 = new Date();
-  Fingerprint2.get(function (components) {
+  var d1 = null;
+
+  function ini(components) {
     var murmur = x64hash128(components.map(function (pair) { return pair.value }).join(), 15);
     murmur = murmur.substr(0, 8);
     var rate = 0;
@@ -1458,7 +1461,7 @@ var cookie = {
     }
     console.log('\n' + ' %c fp v2.0.1 %c ' + _fp_val + '::' + String(_fp_acc * 100).substr(0, 4) + '%::' + _fp_TimeUsed + 'ms %c https://fp.yimian.xyz \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
 
-  })
+  }
 
   function Compress(strNormalString) {
     var strCompressedString = "";
@@ -1467,6 +1470,16 @@ var cookie = {
       strCompressedString += strNormalString.charAt(i);
     }
     return strCompressedString;
+  }
+
+  function generateKey(){
+    var obj = {
+      _fp: cookie.get('_fp'),
+      _fp_ref_: cookie.get('_fp_ref_'),
+      _fp_LastChangeTime: cookie.get('_fp_LastChangeTime')
+    };
+    _fp_key = window.btoa(JSON.stringify(obj));
+    return _fp_key;
   }
 
 
@@ -1503,13 +1516,81 @@ var cookie = {
     return levenshteinenator;
   }());
 
-  var fp = function (f) {
+
+  var key_check = function (key){
+
+    var obj;
+    try{
+      obj = JSON.parse(window.atob(key));
+    }catch(e){
+      return false;
+    }
+
+    if(obj._fp === undefined || obj._fp_ref_ === undefined || obj._fp_LastChangeTime === undefined){
+      return false;
+    }
+
+    return true;
+  }
+
+  var fp_link = function (key, f){
+
+
+    if(key != _fp_key && !_fp_ready && key_check(key)){
+      key = window.atob(key);
+      var obj = JSON.parse(key);
+
+      cookie.set('_fp', obj._fp);
+      cookie.set('_fp_ref_', obj._fp_ref_);
+      cookie.set('_fp_LastChangeTime', obj._fp_LastChangeTime);
+
+      fp_reset();
+    }
+    fp_get(f);
+  }
+
+  var fp_reset = function (){
+
+    d1 = new Date();
+    Fingerprint2.get(ini);
+    _fp_ready = true;
+  }
+
+  var fp_get = function (f) {
     if (!_fp_val) {
-      setTimeout(fp, 1, f);
+      setTimeout(fp_get, 1, f);
       return;
     }
-    f(_fp_val, _fp_acc, _fp_detail, _fp_LastChangeTime, _fp_TimeUsed, _fp_detailObj);
+    f(_fp_val, generateKey(), _fp_acc, _fp_detail, _fp_LastChangeTime, _fp_TimeUsed, _fp_detailObj);
   };
+
+  var fp = function (k, f){
+    if(typeof k === 'function'){
+      if(!_fp_ready) {
+        fp_reset();
+      }
+      fp_get(k);
+      return;
+    }
+
+    if(typeof k === 'string'){
+      if(f == undefined) f = function(){};
+      if(k == 'reset'){
+    cookie.del('_fp');
+    cookie.del('_fp_ref_');
+    cookie.del('_fp_LastChangeTime');
+        fp_reset();
+        fp_get(f);
+        return;
+      }else{
+        fp_link(k, f);
+      }
+
+      return;
+    }
+
+
+  }
 
   return fp;
 });

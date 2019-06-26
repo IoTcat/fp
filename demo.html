@@ -1,11 +1,10 @@
 <!doctype html>
 <html>
-
 <head>
   <title>fp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
+    body{
       font-family: sans-serif;
       max-width: 48em;
       margin: auto;
@@ -13,15 +12,12 @@
       background: #222;
       color: #fff;
     }
-
     h1 {
       margin: 2em 0 0;
     }
-
     p {
       font-size: 1.2em
     }
-
     button {
       border: none;
       color: #fff;
@@ -32,58 +28,56 @@
       box-shadow: 0 3px 0 #05c;
       outline: none;
     }
-
     button:active {
       transform: translateY(3px);
       box-shadow: none;
     }
-
     strong {
       display: block;
       letter-spacing: 1px;
       word-wrap: break-word;
     }
-
     @media (min-width: 32em) {
       h1 {
         font-size: 4em;
       }
-
       strong {
         font-size: 1.5em;
       }
     }
   </style>
 </head>
-
 <body>
   <div id="container"></div>
 
   <h1>fp</h1>
 
 
-  <p> <button type="button" id="btn">Your fp: <strong id="fp"></strong></button></p>
-  <p>Time Used: <var id="time"></var> ms &nbsp;Accuracy: <var id="acc"></var> %</p>
+  <p>  <button type="button" id="btn">Your fp: <strong id="fp"></strong></button></p>
+  <p>Time Used: <var id="time"></var> ms  &nbsp;Accuracy: <var id="acc"></var> %</p>
   <p>Created Time: <var id="cTime"></var></p>
   <p><strong>Detailed information: </strong></p>
   <pre id="details"></pre>
 
-  <script src="fp.min.js"></script>
+  <script src="fp.js"></script>
   <script>
-    document.querySelector("#btn").addEventListener("click", function () {
-      location.reload();
-    })
 
-    fp((f, acc, detail, CreateTime, TimeUsed, detailObj) => {
+document.querySelector("#btn").addEventListener("click", function () {
+  location.reload();
+})
 
-      document.querySelector("#acc").textContent = String(acc * 100).substr(0, 6);
-      document.querySelector("#time").textContent = TimeUsed
-      document.querySelector("#fp").textContent = f
-      document.querySelector("#details").textContent = detail;
-      document.querySelector("#cTime").textContent = CreateTime;
-      console.log(detailObj);
-    })
+fp('eyJfZnAiOiI1YjI4Y2U5ZCIsIl9mcF9yZWZfIjoiZVZiSmJVVjlWNGFzS0JZOE10THRZQmJVTkVkSkk5WUpJZElnYlJJUVpWY0lhZGJKZVFZNWI5TkVMRmJKWlZJZ09KZTlkMEwxWkZVZExOVUZJVWJOWkpJNVpvWkZhOVpVY0ZjSklCY0pZeEl4Y0pNQmJKYlJkeFlCYkJZQlk0YlViQlpoSUJaRllGWUZiY0xaY1JZQllRVHRRTlpsUmxkSlFkSUZiOVlZUUJRNVZGUUZRaFRWV0ZlTmRJWVZRVlpKYjVUQVprUmhOUmRFTkJNSmJvWmhaNVpKWmhaTmFvY0phTWN3VEpaSlpSVTlJWkxOWk1jeGJGY0JiRmExTEpUeFk1TE5MSlFsSVZPUU5ZTyIsIl9mcF9MYXN0Q2hhbmdlVGltZSI6IjE1NjE1MTkxNzYifQ==', (f, key, acc, detail, CreateTime, TimeUsed, detailObj)=>{
+
+        document.querySelector("#acc").textContent = String(acc * 100).substr(0, 6);
+        document.querySelector("#time").textContent = TimeUsed
+        document.querySelector("#fp").textContent = f
+        document.querySelector("#details").textContent = detail;
+        document.querySelector("#cTime").textContent = CreateTime;
+        console.log('fp_key: ' + key);
+        console.log(detailObj);
+})
+
+
   </script>
 </body>
-
 </html>
