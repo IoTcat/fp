@@ -77,5 +77,5 @@ A simple example:
  - China: `https://cdn.yimian.xyz/fp/fp.min.js`
 
 ## Background
-This project is developed from https://github.com/mestarshine/fingerprint2js
+This project is developed from https://github.com/Valve/fingerprintjs2   
 
