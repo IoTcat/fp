@@ -73,6 +73,26 @@ A simple example:
 </script>
 ```
 
+### Cookie
+fp preloads [iotcat/cookie-js](https://github.com/iotcat/cookie-js), support all of its functions.    
+
+**usage**
+`cookie.set(key, val, days)`: set a cookie, with key name, value, days to live(defaule: 10 years)   
+`cookie.get(key)`: get cookie with key    
+`cookie.del(key)`: delete cookie with key    
+
+**example**
+```js
+//set a cookie named iotcat，its value is hero，live for 30 days
+cookie.set("iotcat", "hero", 30);
+
+//get the value of the cookie iotcat
+alert(cookie.get("iotcat"));
+
+//delete the cookie of iotcat
+cookie.del("iotcat");
+```
+
 ## CDN
  - China: `https://cdn.yimian.xyz/fp/fp.min.js`
 
