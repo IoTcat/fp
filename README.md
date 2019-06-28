@@ -76,7 +76,7 @@ A simple example:
 ### Cookie
 fp preloads [iotcat/cookie-js](https://github.com/iotcat/cookie-js), support all of its functions.    
 
-**usage**
+**usage**    
 `cookie.set(key, val, days)`: set a cookie, with key name, value, days to live(defaule: 10 years)   
 `cookie.get(key)`: get cookie with key    
 `cookie.del(key)`: delete cookie with key    
