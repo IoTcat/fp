@@ -1,5 +1,6 @@
 # fp
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FIoTcat%2Ffp.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FIoTcat%2Ffp?ref=badge_shield)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FIoTcat%2Ffp.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FIoTcat%2Ffp?ref=badge_shield)
 
 Let fp work with Cookie, cross-domain, make it stable and reliable!
 
