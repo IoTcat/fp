@@ -103,3 +103,7 @@ cookie.del("iotcat");
 ## Background
 This project is developed from https://github.com/Valve/fingerprintjs2   
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FIoTcat%2Ffp.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FIoTcat%2Ffp?ref=badge_large)
