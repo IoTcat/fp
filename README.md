@@ -11,7 +11,7 @@ fp is a concise web front-end solution to generate an unique 'fingerprint' for e
 
 ## Quick start
 
-[Click here to see how it works!](./demo.html)
+[Click here to see how it works!](https://fp.yimian.xyz/demo.html)
 
 
 ## How to use fp?
