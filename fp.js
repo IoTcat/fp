@@ -1488,6 +1488,7 @@
   var startTime = new Date().valueOf();
   var options_low = {
     excludes: {
+      "userAgent": true,
       'enumerateDevices': true,
       'pixelRatio': true,
       'doNotTrack': true,
@@ -1502,6 +1503,21 @@
       "webgl": true,
       "adBlock": true,
       "audio": true
+    }
+  };
+  var options_mid = {
+    excludes: {
+      'enumerateDevices': true,
+      'pixelRatio': true,
+      'doNotTrack': true,
+      'fontsFlash': true,
+      'fonts': true,
+      'language': true,
+      "availableScreenResolution": true,
+      "timezoneOffset": true,
+      "timezone": true,
+      "plugins": true,
+      "adBlock": true,
     }
   };
   var options_high = {
@@ -1526,21 +1542,31 @@
     }
   }
 
-  var getLowFp = function(highFp, components, resolve, reject){
-    var lowFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 4);
-    var fullFp = lowFp + highFp;
+  var getLowFp = function(highFp, midFp, components, resolve, reject){
+    var lowFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 2);
+    var fullFp = lowFp + midFp + highFp;
     console.log('\n' + ' %c fp v3.0.1 %c ' + fullFp + '::' + (new Date().valueOf() - startTime) + 'ms %c https://fp.yimian.xyz/ \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
     resolve(fullFp);
+  }
+
+  var getMidFp = function(highFp, components, resolve, reject){
+    var midFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 2);
+    components.forEach(function(obj, index){
+      if(options_low.excludes.hasOwnProperty(obj.key)){
+         components.splice(index, 1);
+      }
+    });
+    getLowFp(highFp, midFp, components, resolve, reject);
   }
 
   var getHighFp = function(components, resolve, reject){
     var highFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 2);
     components.forEach(function(obj, index){
-      if(options_high.excludes.hasOwnProperty(obj.key)){
+      if(options_mid.excludes.hasOwnProperty(obj.key)){
          components.splice(index, 1);
       }
     });
-    getLowFp(highFp, components, resolve, reject);
+    getMidFp(highFp, components, resolve, reject);
   }
 
   return new Promise(function(resolve, reject){
