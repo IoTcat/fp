@@ -1,6 +1,6 @@
 /*
  * @package: fp
- * @version: v3.0.1
+ * @version: v3.0.3
  * @Author: IoTcat (https://iotcat.me) 
  * @Date: 2020-08-15 11:34:32 
  * @Last Modified by: iotcat
@@ -1545,7 +1545,7 @@
   var getLowFp = function(highFp, midFp, components, resolve, reject){
     var lowFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 2);
     var fullFp = lowFp + midFp + highFp;
-    console.log('\n' + ' %c fp v3.0.1 %c ' + fullFp + '::' + (new Date().valueOf() - startTime) + 'ms %c https://fp.yimian.xyz/ \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
+    console.log('\n' + ' %c fp v3.0.3 %c ' + fullFp + '::' + (new Date().valueOf() - startTime) + 'ms %c https://fp.yimian.xyz/ \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
     resolve(fullFp);
   }
 
