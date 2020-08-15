@@ -1,49 +1,55 @@
 /*
+ * @package: fp
+ * @version: v3.0.1
  * @Author: IoTcat (https://iotcat.me) 
- * @Date: 2019-06-26 11:34:32 
- * @Last Modified by: 
- * @Last Modified time: 2019-06-26 11:38:03
+ * @Date: 2020-08-15 11:34:32 
+ * @Last Modified by: iotcat
+ * @Last Modified time: 2020-08-15 11:34:32 
  */
 
-var cookie = {
-  set: function (name, value, Days) {
-    if(Days == undefined) var Days = 3000;
-    var exp = new Date();
-    exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
-    document.cookie = name + '=' + escape(value) + ';expires=' + exp.toGMTString() + ";path=/";
-  },
-  get: function (name) {
-    var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)');
-    if (arr = document.cookie.match(reg)) {
-      return unescape(arr[2]);
-    } else {
-      return null;
-    }
-  },
-  del: function (name) {
-    var exp = new Date();
-    exp.setTime(exp.getTime() - 1);
-    var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)');
-    if (arr = document.cookie.match(reg)) {
-      var cval = unescape(arr[2]);
-    } else {
-      var cval = null;
-    }
-    if (cval != null) {
-      document.cookie = name + '=' + cval + ';expires=' + exp.toGMTString();
-    }
-  }
-};
+/*
+* Fingerprintjs2 2.1.2 - Modern & flexible browser fingerprint library v2
+* https://github.com/Valve/fingerprintjs2
+* Copyright (c) 2020 Valentin Vasilyev (valentin@fingerprintjs.com)
+* Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED. IN NO EVENT SHALL VALENTIN VASILYEV BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+/*
+* This software contains code from open-source projects:
+* MurmurHash3 by Karan Lyons (https://github.com/karanlyons/murmurHash3.js)
+*/
 
 /* global define */
 (function (name, context, definition) {
   'use strict'
   if (typeof window !== 'undefined' && typeof define === 'function' && define.amd) { define(definition) } else if (typeof module !== 'undefined' && module.exports) { module.exports = definition() } else if (context.exports) { context.exports = definition() } else { context[name] = definition() }
-})('fp', this, function () {
+})('Fingerprint2', this, function () {
   'use strict'
 
-  var MaxDiff = 0.8;
+  // detect if object is array
+  // only implement if no native implementation is available
+  if (typeof Array.isArray === 'undefined') {
+    Array.isArray = function (obj) {
+      return Object.prototype.toString.call(obj) === '[object Array]'
+    }
+  };
 
+  /// MurmurHash3 related functions
+
+  //
+  // Given two 64bit ints (as an array of two 32bit ints) returns the two
+  // added together as a 64bit int (as an array of two 32bit ints).
+  //
   var x64Add = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
     n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff]
@@ -62,7 +68,10 @@ var cookie = {
     return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]]
   }
 
-
+  //
+  // Given two 64bit ints (as an array of two 32bit ints) returns the two
+  // multiplied together as a 64bit int (as an array of two 32bit ints).
+  //
   var x64Multiply = function (m, n) {
     m = [m[0] >>> 16, m[0] & 0xffff, m[1] >>> 16, m[1] & 0xffff]
     n = [n[0] >>> 16, n[0] & 0xffff, n[1] >>> 16, n[1] & 0xffff]
@@ -89,7 +98,11 @@ var cookie = {
     o[0] &= 0xffff
     return [(o[0] << 16) | o[1], (o[2] << 16) | o[3]]
   }
-
+  //
+  // Given a 64bit int (as an array of two 32bit ints) and an int
+  // representing a number of bit positions, returns the 64bit int (as an
+  // array of two 32bit ints) rotated left by that number of positions.
+  //
   var x64Rotl = function (m, n) {
     n %= 64
     if (n === 32) {
@@ -101,7 +114,11 @@ var cookie = {
       return [(m[1] << n) | (m[0] >>> (32 - n)), (m[0] << n) | (m[1] >>> (32 - n))]
     }
   }
-
+  //
+  // Given a 64bit int (as an array of two 32bit ints) and an int
+  // representing a number of bit positions, returns the 64bit int (as an
+  // array of two 32bit ints) shifted left by that number of positions.
+  //
   var x64LeftShift = function (m, n) {
     n %= 64
     if (n === 0) {
@@ -112,11 +129,18 @@ var cookie = {
       return [m[1] << (n - 32), 0]
     }
   }
-
+  //
+  // Given two 64bit ints (as an array of two 32bit ints) returns the two
+  // xored together as a 64bit int (as an array of two 32bit ints).
+  //
   var x64Xor = function (m, n) {
     return [m[0] ^ n[0], m[1] ^ n[1]]
   }
-
+  //
+  // Given a block, returns murmurHash3's final x64 mix of that block.
+  // (`[0, h[0] >>> 1]` is a 33 bit unsigned right shift. This is the
+  // only place where we need to right shift 64bit ints.)
+  //
   var x64Fmix = function (h) {
     h = x64Xor(h, [0, h[0] >>> 1])
     h = x64Multiply(h, [0xff51afd7, 0xed558ccd])
@@ -126,7 +150,10 @@ var cookie = {
     return h
   }
 
-
+  //
+  // Given a string and an optional seed as an int, returns a 128 bit
+  // hash using the x64 flavor of MurmurHash3, as an unsigned hex.
+  //
   var x64hash128 = function (key, seed) {
     key = key || ''
     seed = seed || 0
@@ -315,10 +342,9 @@ var cookie = {
       done(devices.map(function (device) {
         return 'id=' + device.deviceId + ';gid=' + device.groupId + ';' + device.kind + ';' + device.label
       }))
+    })['catch'](function (error) {
+      done(error)
     })
-      .catch(function (error) {
-        done(error)
-      })
   }
 
   var isEnumerateDevicesSupported = function () {
@@ -364,6 +390,7 @@ var cookie = {
     context.startRendering()
 
     var audioTimeoutId = setTimeout(function () {
+      console.warn('Audio fingerprint timed out. Please report bug at https://github.com/Valve/fingerprintjs2 with your user agent: "' + navigator.userAgent + '".')
       context.oncomplete = function () { }
       context = null
       return done('audioTimeout')
@@ -1038,6 +1065,7 @@ var cookie = {
     } catch (e) { /* squelch */ }
 
     if (!gl.getShaderPrecisionFormat) {
+      loseWebglContext(gl)
       return result
     }
 
@@ -1055,6 +1083,7 @@ var cookie = {
         })
       })
     })
+    loseWebglContext(gl)
     return result
   }
   var getWebglVendorAndRenderer = function () {
@@ -1062,7 +1091,9 @@ var cookie = {
     try {
       var glContext = getWebglCanvas()
       var extensionDebugRendererInfo = glContext.getExtension('WEBGL_debug_renderer_info')
-      return glContext.getParameter(extensionDebugRendererInfo.UNMASKED_VENDOR_WEBGL) + '~' + glContext.getParameter(extensionDebugRendererInfo.UNMASKED_RENDERER_WEBGL)
+      var params = glContext.getParameter(extensionDebugRendererInfo.UNMASKED_VENDOR_WEBGL) + '~' + glContext.getParameter(extensionDebugRendererInfo.UNMASKED_RENDERER_WEBGL)
+      loseWebglContext(glContext)
+      return params
     } catch (e) {
       return null
     }
@@ -1108,25 +1139,25 @@ var cookie = {
     // We extract the OS from the user agent (respect the order of the if else if statement)
     if (userAgent.indexOf('windows phone') >= 0) {
       os = 'Windows Phone'
-    } else if (userAgent.indexOf('win') >= 0) {
+    } else if (userAgent.indexOf('windows') >= 0 || userAgent.indexOf('win16') >= 0 || userAgent.indexOf('win32') >= 0 || userAgent.indexOf('win64') >= 0 || userAgent.indexOf('win95') >= 0 || userAgent.indexOf('win98') >= 0 || userAgent.indexOf('winnt') >= 0 || userAgent.indexOf('wow64') >= 0) {
       os = 'Windows'
     } else if (userAgent.indexOf('android') >= 0) {
       os = 'Android'
-    } else if (userAgent.indexOf('linux') >= 0 || userAgent.indexOf('cros') >= 0) {
+    } else if (userAgent.indexOf('linux') >= 0 || userAgent.indexOf('cros') >= 0 || userAgent.indexOf('x11') >= 0) {
       os = 'Linux'
-    } else if (userAgent.indexOf('iphone') >= 0 || userAgent.indexOf('ipad') >= 0) {
+    } else if (userAgent.indexOf('iphone') >= 0 || userAgent.indexOf('ipad') >= 0 || userAgent.indexOf('ipod') >= 0 || userAgent.indexOf('crios') >= 0 || userAgent.indexOf('fxios') >= 0) {
       os = 'iOS'
-    } else if (userAgent.indexOf('mac') >= 0) {
+    } else if (userAgent.indexOf('macintosh') >= 0 || userAgent.indexOf('mac_powerpc)') >= 0) {
       os = 'Mac'
     } else {
       os = 'Other'
     }
-    // We detect if the person uses a mobile device
+    // We detect if the person uses a touch device
     var mobileDevice = (('ontouchstart' in window) ||
       (navigator.maxTouchPoints > 0) ||
       (navigator.msMaxTouchPoints > 0))
 
-    if (mobileDevice && os !== 'Windows Phone' && os !== 'Android' && os !== 'iOS' && os !== 'Other') {
+    if (mobileDevice && os !== 'Windows' && os !== 'Windows Phone' && os !== 'Android' && os !== 'iOS' && os !== 'Other' && userAgent.indexOf('cros') === -1) {
       return true
     }
 
@@ -1151,12 +1182,17 @@ var cookie = {
       return true
     } else if ((platform.indexOf('mac') >= 0 || platform.indexOf('ipad') >= 0 || platform.indexOf('ipod') >= 0 || platform.indexOf('iphone') >= 0) && os !== 'Mac' && os !== 'iOS') {
       return true
+    } else if (platform.indexOf('arm') >= 0 && os === 'Windows Phone') {
+      return false
+    } else if (platform.indexOf('pike') >= 0 && userAgent.indexOf('opera mini') >= 0) {
+      return false
     } else {
       var platformIsOther = platform.indexOf('win') < 0 &&
         platform.indexOf('linux') < 0 &&
         platform.indexOf('mac') < 0 &&
         platform.indexOf('iphone') < 0 &&
-        platform.indexOf('ipad') < 0
+        platform.indexOf('ipad') < 0 &&
+        platform.indexOf('ipod') < 0
       if (platformIsOther !== (os === 'Other')) {
         return true
       }
@@ -1170,15 +1206,25 @@ var cookie = {
 
     // we extract the browser from the user agent (respect the order of the tests)
     var browser
-    if (userAgent.indexOf('firefox') >= 0) {
+    if (userAgent.indexOf('edge/') >= 0 || userAgent.indexOf('iemobile/') >= 0) {
+      // Unreliable, different versions use EdgeHTML, Webkit, Blink, etc.
+      return false
+    } else if (userAgent.indexOf('opera mini') >= 0) {
+      // Unreliable, different modes use Presto, WebView, Webkit, etc.
+      return false
+    } else if (userAgent.indexOf('firefox/') >= 0) {
       browser = 'Firefox'
-    } else if (userAgent.indexOf('opera') >= 0 || userAgent.indexOf('opr') >= 0) {
+    } else if (userAgent.indexOf('opera/') >= 0 || userAgent.indexOf(' opr/') >= 0) {
       browser = 'Opera'
-    } else if (userAgent.indexOf('chrome') >= 0) {
+    } else if (userAgent.indexOf('chrome/') >= 0) {
       browser = 'Chrome'
-    } else if (userAgent.indexOf('safari') >= 0) {
-      browser = 'Safari'
-    } else if (userAgent.indexOf('trident') >= 0) {
+    } else if (userAgent.indexOf('safari/') >= 0) {
+      if (userAgent.indexOf('android 1.') >= 0 || userAgent.indexOf('android 2.') >= 0 || userAgent.indexOf('android 3.') >= 0 || userAgent.indexOf('android 4.') >= 0) {
+        browser = 'AOSP'
+      } else {
+        browser = 'Safari'
+      }
+    } else if (userAgent.indexOf('trident/') >= 0) {
       browser = 'Internet Explorer'
     } else {
       browser = 'Other'
@@ -1194,7 +1240,7 @@ var cookie = {
       return true
     } else if (tempRes === 39 && browser !== 'Internet Explorer' && browser !== 'Other') {
       return true
-    } else if (tempRes === 33 && browser !== 'Chrome' && browser !== 'Opera' && browser !== 'Other') {
+    } else if (tempRes === 33 && browser !== 'Chrome' && browser !== 'AOSP' && browser !== 'Opera' && browser !== 'Other') {
       return true
     }
 
@@ -1224,7 +1270,9 @@ var cookie = {
     }
 
     var glContext = getWebglCanvas()
-    return !!window.WebGLRenderingContext && !!glContext
+    var isSupported = !!window.WebGLRenderingContext && !!glContext
+    loseWebglContext(glContext)
+    return isSupported
   }
   var isIE = function () {
     if (navigator.appName === 'Microsoft Internet Explorer') {
@@ -1264,6 +1312,12 @@ var cookie = {
     } catch (e) { /* squelch */ }
     if (!gl) { gl = null }
     return gl
+  }
+  var loseWebglContext = function (context) {
+    var loseContextExtension = context.getExtension('WEBGL_lose_context')
+    if (loseContextExtension != null) {
+      loseContextExtension.loseContext()
+    }
   }
 
   var components = [
@@ -1391,7 +1445,9 @@ var cookie = {
               return [p[0], p[1], mimeTypes].join('::')
             })
           })
-        } else if (['canvas', 'webgl'].indexOf(component.key) !== -1) {
+        } else if (['canvas', 'webgl'].indexOf(component.key) !== -1 && Array.isArray(component.value)) {
+          // sometimes WebGL returns error in headless browsers (during CI testing for example)
+          // so we need to join only if the values are array
           newComponents.push({ key: component.key, value: component.value.join('~') })
         } else if (['sessionStorage', 'localStorage', 'indexedDb', 'addBehavior', 'openDatabase'].indexOf(component.key) !== -1) {
           if (component.value) {
@@ -1407,190 +1463,120 @@ var cookie = {
             newComponents.push({ key: component.key, value: component.value })
           }
         }
-      };
-      var murmur = x64hash128(map(newComponents, function (component) { return component.value }).join('~~~'), 31);
-      callback(murmur, newComponents);
+      }
+      var murmur = x64hash128(map(newComponents, function (component) { return component.value }).join('~~~'), 31)
+      callback(murmur, newComponents)
+    })
+  }
+
+  Fingerprint2.x64hash128 = x64hash128
+  Fingerprint2.VERSION = '2.1.2'
+  return Fingerprint2
+})
+
+/*
+ * @Author: IoTcat (https://iotcat.me) 
+ * @Date: 2020-08-15 11:34:32 
+ * @Last Modified by: iotcat
+ * @Last Modified time: 2020-08-15 11:34:32 
+ */
+ //fp
+;(function (name, context, definition) {
+  'use strict'
+  if (typeof window !== 'undefined' && typeof define === 'function' && define.amd) { define(definition) } else if (typeof module !== 'undefined' && module.exports) { module.exports = definition() } else if (context.exports) { context.exports = definition() } else { context[name] = definition() }
+})('fp', this, function () {
+  var startTime = new Date().valueOf();
+  var options_low = {
+    excludes: {
+      'enumerateDevices': true,
+      'pixelRatio': true,
+      'doNotTrack': true,
+      'fontsFlash': true,
+      'fonts': true,
+      'language': true,
+      "availableScreenResolution": true,
+      "timezoneOffset": true,
+      "timezone": true,
+      "plugins": true,
+      "canvas": true,
+      "webgl": true,
+      "adBlock": true,
+      "audio": true
+    }
+  };
+  var options_high = {
+    excludes: {
+      'enumerateDevices': true,
+      'pixelRatio': true,
+      'doNotTrack': true,
+      'fontsFlash': true,
+      'fonts': true,
+      "adBlock": true,
+    }
+  };
+
+
+  var exec = function(f){
+    if (window.requestIdleCallback) {
+        requestIdleCallback(function () {
+            f();
+        })
+    } else {
+        setTimeout(f, 500)
+    }
+  }
+
+  var getLowFp = function(highFp, components, resolve, reject){
+    var lowFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 4);
+    var fullFp = lowFp + highFp;
+    console.log('\n' + ' %c fp v3.0.1 %c ' + fullFp + '::' + (new Date().valueOf() - startTime) + 'ms %c https://fp.yimian.xyz/ \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
+    resolve(fullFp);
+  }
+
+  var getHighFp = function(components, resolve, reject){
+    var highFp = Fingerprint2.x64hash128(JSON.stringify(components), 15).substring(0, 2);
+    components.forEach(function(obj, index){
+      if(options_high.excludes.hasOwnProperty(obj.key)){
+         components.splice(index, 1);
+      }
     });
+    getLowFp(highFp, components, resolve, reject);
+  }
+
+  return new Promise(function(resolve, reject){
+    exec(function(){
+      startTime = new Date().valueOf();
+      Fingerprint2.get(options_high, function (components) {
+        getHighFp(components, resolve, reject);
+      })
+    });
+  });
+})
+
+//fp_details
+;(function (name, context, definition) {
+  'use strict'
+  if (typeof window !== 'undefined' && typeof define === 'function' && define.amd) { define(definition) } else if (typeof module !== 'undefined' && module.exports) { module.exports = definition() } else if (context.exports) { context.exports = definition() } else { context[name] = definition() }
+})('fp_details', this, function () {
+  var options= {
+    excludes: {}
   };
 
-  var _fp_val = null;
-  var _fp_detail = "";
-  var _fp_acc = null;
-  var _fp_LastChangeTime = null;
-  var _fp_TimeUsed = null;
-  var _fp_detailObj = {};
-  var _fp_key = null;
-  var _fp_ready = false;
-
-  var d1 = null;
-
-  function ini(components) {
-    var murmur = x64hash128(components.map(function (pair) { return pair.value }).join(), 15);
-    murmur = murmur.substr(0, 8);
-    var rate = 0;
-    for (var index in components) {
-      var obj = components[index]
-      var line = obj.key + " = " + String(obj.value).substr(0, 100);
-      _fp_detail += line + "\n";
-      _fp_detailObj[obj.key] = String(obj.value).substr(0, 100);
+  var exec = function(f){
+    if (window.requestIdleCallback) {
+        requestIdleCallback(function () {
+            f();
+        })
+    } else {
+        setTimeout(f, 500)
     }
-    if (cookie.get('_fp_ref_')) rate = levenshteinenator(Compress(window.btoa(JSON.stringify(_fp_detailObj))), cookie.get('_fp_ref_'));
-    else {
-      rate = 0;
-    }
-    //rate = (rate < 0) ? 0 : rate;
-    _fp_acc = rate;
-    if (rate < MaxDiff) {
-      cookie.set('_fp_ref_', Compress(window.btoa(JSON.stringify(_fp_detailObj))));
-    }
-
-    var d2 = new Date();
-    var time = d2 - d1;
-
-    _fp_TimeUsed = time;
-
-    if (rate < MaxDiff) {
-      cookie.set('_fp', murmur);
-      cookie.set('_fp_LastChangeTime', Date.parse(d2) / 1000);
-      _fp_LastChangeTime = d2;
-      _fp_val = murmur;
-    }
-    else {
-      _fp_LastChangeTime = new Date(cookie.get('_fp_LastChangeTime') * 1000);
-      _fp_val = cookie.get('_fp');
-    }
-    console.log('\n' + ' %c fp v2.0.1 %c ' + _fp_val + '::' + String(_fp_acc * 100).substr(0, 4) + '%::' + _fp_TimeUsed + 'ms %c https://fp.yimian.xyz \n', 'color: #00FFFF; background: #030307; padding:5px 0;', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #4682B4; padding:5px 0;');
-
   }
 
-  function Compress(strNormalString) {
-    var strCompressedString = "";
-
-    for (var i = 0; i < strNormalString.length; i += Math.round(strNormalString.length / 289)) {
-      strCompressedString += strNormalString.charAt(i);
-    }
-    return strCompressedString;
-  }
-
-  function generateKey(){
-    var obj = {
-      _fp: cookie.get('_fp'),
-      _fp_ref_: cookie.get('_fp_ref_'),
-      _fp_LastChangeTime: cookie.get('_fp_LastChangeTime')
-    };
-    _fp_key = window.btoa(JSON.stringify(obj));
-    return _fp_key;
-  }
-
-
-  var levenshteinenator = (function () {
-    function levenshteinenator(a, b) {
-      var cost;
-      var m = a.length;
-      var n = b.length;
-
-      if (m < n) {
-        var c = a; a = b; b = c;
-        var o = m; m = n; n = o;
-      }
-
-      var r = []; r[0] = [];
-      for (var c = 0; c < n + 1; ++c) {
-        r[0][c] = c;
-      }
-
-      for (var i = 1; i < m + 1; ++i) {
-        r[i] = []; r[i][0] = i;
-        for (var j = 1; j < n + 1; ++j) {
-          cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
-          r[i][j] = minimator(r[i - 1][j] + 1, r[i][j - 1] + 1, r[i - 1][j - 1] + cost);
-        }
-      }
-      return 1 - r[m - 1][n - 1] / Math.max(m, n);
-    }
-    function minimator(x, y, z) {
-      if (x <= y && x <= z) return x;
-      if (y <= x && y <= z) return y;
-      return z;
-    }
-    return levenshteinenator;
-  }());
-
-
-  var key_check = function (key){
-
-    var obj;
-    try{
-      obj = JSON.parse(window.atob(key));
-    }catch(e){
-      return false;
-    }
-
-    if(obj._fp === undefined || obj._fp_ref_ === undefined || obj._fp_LastChangeTime === undefined){
-      return false;
-    }
-
-    return true;
-  }
-
-  var fp_link = function (key, f){
-
-
-    if(key != _fp_key && !_fp_ready && key_check(key)){
-      key = window.atob(key);
-      var obj = JSON.parse(key);
-
-      cookie.set('_fp', obj._fp);
-      cookie.set('_fp_ref_', obj._fp_ref_);
-      cookie.set('_fp_LastChangeTime', obj._fp_LastChangeTime);
-
-      fp_reset();
-    }
-    fp_get(f);
-  }
-
-  var fp_reset = function (){
-
-    d1 = new Date();
-    Fingerprint2.get(ini);
-    _fp_ready = true;
-  }
-
-  var fp_get = function (f) {
-    if (!_fp_val) {
-      setTimeout(fp_get, 1, f);
-      return;
-    }
-    f(_fp_val, generateKey(), _fp_acc, _fp_detail, _fp_LastChangeTime, _fp_TimeUsed, _fp_detailObj);
-  };
-
-  var fp = function (k, f){
-    if(typeof k === 'function'){
-      if(!_fp_ready) {
-        fp_reset();
-      }
-      fp_get(k);
-      return;
-    }
-
-    if(typeof k === 'string'){
-      if(f == undefined) f = function(){};
-      if(k == 'reset'){
-    cookie.del('_fp');
-    cookie.del('_fp_ref_');
-    cookie.del('_fp_LastChangeTime');
-        fp_reset();
-        fp_get(f);
-        return;
-      }else{
-        fp_link(k, f);
-      }
-
-      return;
-    }
-
-
-  }
-
-  return fp;
-});
+  return new Promise(function(resolve, reject){
+    exec(function(){
+      Fingerprint2.get(options, function (components) {
+        resolve(components);
+      })
+    });
+  });
+})

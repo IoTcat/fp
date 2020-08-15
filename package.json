@@ -1,0 +1,9 @@
+{
+  "name": "fp3",
+  "version": "3.0.1",
+  "description": "fp is a concise web front-end solution to generate an unique 'fingerprint' for each visitor basing on visitor's device and browser.",
+  "main": "fp.js",
+  "repository": "git@github.com:IoTcat/fp.git",
+  "author": "iotcat <i@iotcat.me>",
+  "license": "MIT"
+}
