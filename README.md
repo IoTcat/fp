@@ -1,8 +1,14 @@
 # fp
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FIoTcat%2Ffp.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FIoTcat%2Ffp?ref=badge_shield)
+![version](https://img.shields.io/npm/v/fp3)
+![license](https://img.shields.io/npm/l/fp3)
+![download](https://img.shields.io/npm/dt/fp3)
+![size](https://badge-size.herokuapp.com/iotcat/fp/master/dist/fp.min.js?compression=gzip)
 
-The simplified usage of [fingerprintjs/fingerprintjs2](https://github.com/fingerprintjs/fingerprintjs2).
+The simplified usage of [fingerprintjs/fingerprintjs2](https://github.com/fingerprintjs/fingerprintjs2).   
+
+[简体中文](./zh.md)
 
 
 ## What is fp?
