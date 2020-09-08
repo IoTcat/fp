@@ -21,10 +21,27 @@ fp is a concise web front-end solution to generate an unique 'fingerprint' for e
 
 
 ## How to use fp?
-To use fp, you must include the fp.js or fp.min.js first.  
-A simple example:
+
+### Install
+
+npm:  
+```bash
+$ npm install fp3 --save
+```
+
+yarn:  
+```bash
+$ yarn add fp3
+```
+
+Cite in HTML: 
 ```html
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fp3/dist/fp.min.js"></script>
+```
+
+### Generate fp
+This is a demo to generate fp:  
+```html
 <script type="text/javascript">
   ;(async function(){
     alert(await fp);
