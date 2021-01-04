@@ -17,7 +17,7 @@ fp为每一个用户代理(浏览器)生成一个唯一的识别码。fp的生�
 
 ## 快速开始
 
-[点击查看你的fp](https://fp.yimian.xyz/demo.html)
+[点击查看你的fp](https://fp.js.org/demo.html)
 
 
 ## 如何使用
